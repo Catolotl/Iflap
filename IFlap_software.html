@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IFlap Homescreen</title>
+  <style>
+  * {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url("https://cdn.osxdaily.com/wp-content/uploads/2020/11/get-ipados-14-wallpapers-4-scaled.jpeg");
+  position: relative;
+  transition: background-color 2s ease, opacity 2s ease;  /* Longer transition for smoothness */
+  background-attachment: fixed;
+  background-size: cover;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  opacity: 0; /* Start with the page hidden */
+  animation: fadeInUp 1s forwards; /* Apply the animation for fade and slide */
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px); /* Start from 20px below */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* End at the normal position */
+  }
+}
+
+.app-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 100px;
+  grid-template-rows: 100px;
+  gap: 10px;
+  opacity: 0; /* Start with apps hidden */
+  animation: fadeInUp 1s 0.5s forwards; /* Delay the appearance of apps */
+}
+
+.app-icon {
+  width: 100px;
+  height: 100px;
+  background-color: rgba(255, 255, 255, 0);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: black;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0);
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  padding: 6px;
+  opacity: 0; /* Start with app icons hidden */
+  animation: fadeInUp 1s 0.7s forwards; /* Delay each app icon appearance */
+}
+
+.app-icon img {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 4px;
+}
+
+.app-label {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 6px 1px;
+  border-radius: 10%;
+  text-align: center;
+}
+
+
+
+
+.wallpaper-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+}
+
+.greeting {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.0);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0; /* Start with greeting hidden */
+  animation: fadeInUp 1s 0.3s forwards; /* Delay the appearance of greeting */
+}
+
+
+.clock {
+  position: fixed;
+  top: 40px;
+  left: 20px;
+  font-size: 30px;
+  font-weight: bold;
+  color: white;
+  background: rgba(255, 255, 255, 0.0);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 6px 10px;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.date {
+  position: fixed;
+  top: 75px;
+  left: 20px;
+  font-size: 15px;
+  font-weight: normal;
+  color: white;
+  background: rgba(255, 255, 255, 0.0);
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 6px 10px;
+  border-radius: 8px;
+  user-select: none;
+}
+
+
+.greeting[contenteditable="true"] {
+  outline: 2px dashed #333;
+}
+
+
+.app-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(255, 255, 255, 0.2); /* light translucent background */
+  padding: 0px;
+  border-radius: 20px;
+
+}
+
+
+
+
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6) center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  z-index: 9999;
+  transition: transform 0.5s ease;
+  touch-action: none;
+}
+
+
+
+
+
+
+  </style>
+</head>
+<body>
+
+  <div id="lockScreen" class="lock-screen">
+    <div style="color: white; font-size: 24px; margin-bottom: 20px;">Swipe up to unlock</div>
+    <div style="width: 80px; height: 5px; background: rgba(255,255,255,0.5); border-radius: 10px; margin-bottom: 40px;"></div>
+  </div>
+  
+
+
+<script>
+  let startY = null;
+  const lockScreen = document.getElementById('lockScreen');
+
+  // Touch start
+  lockScreen.addEventListener('touchstart', (e) => {
+    startY = e.touches[0].clientY;
+  });
+
+  // Touch move
+  lockScreen.addEventListener('touchmove', (e) => {
+    if (!startY) return;
+    const moveY = e.touches[0].clientY;
+    const diffY = startY - moveY;
+
+    if (diffY > 0) {
+      lockScreen.style.transform = `translateY(-${Math.min(diffY, 300)}px)`;
+    }
+  });
+
+  // Touch end
+  lockScreen.addEventListener('touchend', (e) => {
+    const moveY = e.changedTouches[0].clientY;
+    const diffY = startY - moveY;
+
+    if (diffY > 100) {
+      unlockScreen();
+    } else {
+      lockScreen.style.transform = 'translateY(0)';
+    }
+    startY = null;
+  });
+
+  // Keyboard unlock
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      unlockScreen();
+    }
+  });
+
+  // Unlock function
+  function unlockScreen() {
+    lockScreen.style.transition = 'transform 0.5s ease';
+    lockScreen.style.transform = 'translateY(-100%)';
+    setTimeout(() => {
+      lockScreen.style.display = 'none';
+    }, 500);
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  <div class="app-container">
+    <div class="app-grid" id="appGrid"></div>
+  </div>
+  
+
+  <div class="greeting" id="greeting">Hello, <span id="username">User</span></div>
+
+  <div class="app-grid" id="appGrid"></div>
+  <button class="wallpaper-btn" onclick="cycleWallpaper()"></button>
+
+  <div class="clock" id="clock"></div>
+  
+
+  <script>
+ function updateClock() {
+      const now = new Date();
+      const options = { hour: '2-digit', minute: '2-digit' };
+      document.getElementById('clock').textContent = now.toLocaleTimeString([], options);
+    }
+  
+    setInterval(updateClock, 60000); // Update every minute
+    updateClock(); // initial call to display time
+  </script>
+
+<div class="date" id="date"></div>
+
+<script>
+  function updateDate() {
+    const now = new Date();
+    const options = { weekday: 'long', month: 'long', day: 'numeric' };
+    document.getElementById('date').textContent = now.toLocaleDateString(undefined, options);
+  }
+
+  // Update once a day (every 24 hours), but call immediately to show on load
+  setInterval(updateDate, 86400000);
+  updateDate();
+</script>
+
+
+<script>
+window.onload = () => {
+  document.getElementById('loading-spinner').style.display = 'none';
+};
+</script>
+
+
+  <script>
+    const wallpapers = [
+      'url("https://512pixels.net/downloads/macos-wallpapers-6k/10-3-6k.jpg")', //default
+      'url("https://media.idownloadblog.com/wp-content/uploads/2024/05/Starlight-Horizontal-1000x600.jpeg")', //default2
+      'linear-gradient(to right, #1ca16c, #1ca16c)', //Green
+      'linear-gradient(to right, #87cefa, #36648B)', // blue sky
+      'linear-gradient(to right, #f5deb3, #A38358)', // wheat tones
+      'linear-gradient(to right, #ffe4e1, #ff7f7f)', // soft pink
+      'linear-gradient(to right, #e0ffff, #7FBFBF)', // teal/ice
+      'linear-gradient(to right, #d8bfd8, #dda0dd)', // thistle/purple
+      'linear-gradient(to right, #ffcc70, #ff7f50, #ff6347)', // sunset
+      'url("https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1280&q=80")', // mountains
+      'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1280&q=80")', //Misty Forest
+      'url("https://media.idownloadblog.com/wp-content/uploads/2019/05/Glacier_Falls_-_MacBook_Pro_Wallpaper.jpg")', //Mountain Range
+      'url("https://wallpapers.com/images/hd/beautiful-lake-o722rv0l5uerpfdb.jpg")', // Lake
+'url("https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=1280&q=80")'  // snowy mountains
+
+    ];
+    let current = 0;
+
+    const hours = new Date().getHours();
+let timeGreeting = "Hello";
+if (hours < 12) timeGreeting = "Good morning";
+else if (hours < 18) timeGreeting = "Good afternoon";
+else timeGreeting = "Good evening";
+
+document.getElementById('greeting').innerHTML = `${timeGreeting}, <span id="username">User</span>`;
+
+
+const defaultApps = [
+  { name: "IFlap Quick AI", href: "app1.html", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Google_Bard_logo.svg/2048px-Google_Bard_logo.svg.png", showLabel: false },
+  { name: "Google", href: "https://www.google.com", icon:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/640px-Google_%22G%22_logo.svg.png", showLabel: false },
+  { name: "Spotify", href: "https://www.spotify.com", icon: "https://mystickermania.com/cdn/stickers/logo/spotify-cat-logo-512x512.png", showLabel: false },
+  { name: "Youtube", href: "https://www.youtube.com", icon: "https://static.vecteezy.com/system/resources/thumbnails/023/986/704/small_2x/youtube-logo-youtube-logo-transparent-youtube-icon-transparent-free-free-png.png", showLabel: false },
+  { name: "Roblox", href: "https://www.roblox.com", icon:"https://upload.wikimedia.org/wikipedia/commons/1/1e/Roblox_Logo_2025.png", showLabel: false },
+  { name: "Discord", href: "https://www.discord.com", icon:"https://static.vecteezy.com/system/resources/previews/006/892/625/non_2x/discord-logo-icon-editorial-free-vector.jpg", showLabel: false },
+  { name: "Settings", href: "settings_iflap.html", icon: "https://cdn0.iconfinder.com/data/icons/apple-apps/100/Apple_Settings-512.png", showLabel: false },
+];
+
+
+    function saveAppOrder() {
+      const appOrder = Array.from(document.querySelectorAll('.app-icon')).map(app => ({
+        name: app.querySelector('.app-label').textContent,
+        href: app.href,
+        icon: app.querySelector('img').src
+      }));
+      localStorage.setItem('iflap-apps', JSON.stringify(appOrder));
+    }
+
+    function renderApps() {
+  const grid = document.getElementById('appGrid');
+  grid.innerHTML = '';
+  const apps = JSON.parse(localStorage.getItem('iflap-apps')) || defaultApps;
+
+  apps.forEach(app => {
+    const el = document.createElement('a');
+    el.className = 'app-icon';
+    el.href = app.href;
+
+    const img = document.createElement('img');
+    img.src = app.icon;
+    el.appendChild(img);
+
+    if (app.showLabel) {
+      const label = document.createElement('div');
+      label.className = 'app-label';
+      label.textContent = app.name;
+      el.appendChild(label);
+    }
+
+    grid.appendChild(el);
+  });
+}
+
+
+function cycleWallpaper() {
+  current = (current + 1) % wallpapers.length;
+  localStorage.setItem("wallpaperIndex", current); // Save index
+
+  const newWallpaper = wallpapers[current];
+
+  // Update body and lock screen background to match
+  document.body.style.background = newWallpaper;
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundAttachment = "fixed";
+
+  const lockScreen = document.getElementById('lockScreen');
+  lockScreen.style.background = `rgba(0, 0, 0, 0.6), ${newWallpaper}`;
+  lockScreen.style.backgroundSize = "cover";
+  lockScreen.style.backgroundRepeat = "no-repeat";
+  lockScreen.style.backgroundPosition = "center";
+}
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const savedIndex = parseInt(localStorage.getItem("wallpaperIndex"), 10);
+  current = isNaN(savedIndex) ? 0 : savedIndex;
+
+  const newWallpaper = wallpapers[current];
+  document.body.style.background = newWallpaper;
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundAttachment = "fixed";
+
+  const lockScreen = document.getElementById('lockScreen');
+lockScreen.style.background = `rgba(0, 0, 0, 0.6), ${newWallpaper}`;
+
+  lockScreen.style.backgroundSize = "cover";
+  lockScreen.style.backgroundRepeat = "no-repeat";
+  lockScreen.style.backgroundPosition = "center";
+});
+
+
+
+
+
+function loadWallpaper() {
+  const saved = localStorage.getItem('iflap-wallpaper');
+  if (saved) {
+    if (saved.startsWith('url(')) {
+      document.body.style.background = `${saved} center/cover no-repeat`;
+    } else {
+      document.body.style.background = saved;
+    }
+    current = wallpapers.indexOf(saved);
+    if (current === -1) current = 0;
+  }
+}
+
+
+    function loadUsername() {
+      const savedName = localStorage.getItem('iflap-username') || "User";
+      document.getElementById('username').textContent = savedName;
+    }
+
+    document.getElementById('greeting').addEventListener('click', () => {
+      const span = document.getElementById('username');
+      span.contentEditable = "true";
+      span.focus();
+
+      span.addEventListener('blur', () => {
+        span.contentEditable = "false";
+        localStorage.setItem('iflap-username', span.textContent.trim());
+      }, { once: true });
+    });
+
+    loadWallpaper();
+    renderApps();
+    loadUsername();
+
+  </script>
+
+  
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const hasVisited = localStorage.getItem("iflap-has-visited");
+  
+    if (!hasVisited) {
+      // First-time visitor prompt
+      const usernameValue = prompt("Welcome to I Flap Cloud! Please create your account by entering a username:");
+      
+      if (!usernameValue) {
+        alert("You must create an account to proceed.");
+        location.reload();
+        return;
+      }
+  
+      const password = prompt("Please create a password (minimum 4 characters):");
+      
+      if (!password || password.length < 4) {
+        alert("Password must be at least 4 characters long.");
+        location.reload();
+        return;
+      }
+
+      const email= prompt("Please add an Email to use Iflap Cloud");
+      
+      if (!email || email.length < 4) {
+        alert("Your email must be longer than 4 characters");
+        location.reload();
+        return;
+      }
+  
+      // Save credentials
+      localStorage.setItem("iflap-username", usernameValue);
+      localStorage.setItem("iflap-password", btoa(password)); // Encode for basic obfuscation
+      localStorage.setItem("iflap-email", btoa(email)); // Encode for basic obfuscation
+      localStorage.setItem("iflap-has-visited", "true");
+  
+      alert(`Welcome, ${usernameValue}! Your account has been created.`);
+      window.location.href = "IFlap_software.html"; // replace with your actual homepage
+      document.getElementById("username").innerText = `${usernameValue}!`;
+    } else {
+      // Returning user greeting
+      const storedName = localStorage.getItem("iflap-username") || "User";
+      document.getElementById("username").textContent = storedName;
+    }
+  });
+  </script>
+  
+  
+
+
+</body>
+</html>

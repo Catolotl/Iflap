@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IFlap Settings</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .settings-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .settings-item {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .settings-item label {
+      font-weight: bold;
+    }
+
+    .profile-img {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    input[type="text"], input[type="file"] {
+      padding: 8px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+  padding: 10px;
+  background-color: #87cefa;
+  border: none;
+  border-radius: 25px; /* Rounded edges */
+  cursor: pointer;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center; /* Centers the content */
+}
+
+
+
+    button:hover {
+      background-color: #5d9eaf;
+    }
+
+    .edit-btn {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background-color: #87cefa;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 18px;
+    }
+
+    .edit-btn:hover {
+      background-color: #5d9eaf;
+    }
+
+
+    /* Popup styles */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+    .popup.active, .popup-overlay.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>IFlap Settings</h1>
+  <div class="settings-container">
+    <div class="settings-item">
+      <label id="greetingLabel"></label>
+      <div id="displayName">No name set</div>
+    </div>
+
+    <div class="settings-item">
+      <img id="displayPfp" class="profile-img" src="" alt="Profile Picture Preview" />
+      <button class ="edit-btn" onclick="openPopup()">✎</button>
+    </div>
+  </div>
+
+  <!-- Popup -->
+  <div class="popup-overlay" id="popupOverlay"></div>
+  <div class="popup" id="popup">
+    <h2>Change Your Profile</h2>
+    <div class="settings-item">
+      <label for="newName">Enter Your Name:</label>
+      <input type="text" id="newName" placeholder="Your Name">
+    </div>
+
+    <div class="settings-item">
+      <label for="newProfilePicture">Upload Profile Picture:</label>
+      <input type="file" id="newProfilePicture" accept="image/*">
+      <img id="newProfileImagePreview" class="profile-img" src="" alt="New Profile Picture Preview">
+    </div>
+
+    <button onclick="saveSettings()">Save</button>
+    <button onclick="closePopup()">Cancel</button>
+  </div>
+
+  <script>
+    // Load saved settings if they exist
+    function loadSettings() {
+      const savedName = localStorage.getItem('user-name');
+      const savedPfp = localStorage.getItem('user-pfp');
+
+      if (savedName) {
+        document.getElementById('displayName').textContent = savedName;
+        document.getElementById('newName').value = savedName; // Fill the popup input
+      }
+
+      if (savedPfp) {
+        document.getElementById('displayPfp').src = savedPfp;
+        document.getElementById('newProfileImagePreview').src = savedPfp; // Fill the popup preview
+      }
+    }
+
+    // Open popup to change name and profile picture
+    function openPopup() {
+      const popup = document.getElementById('popup');
+      const overlay = document.getElementById('popupOverlay');
+      popup.classList.add('active');
+      overlay.classList.add('active');
+    }
+
+    // Close the popup
+    function closePopup() {
+      const popup = document.getElementById('popup');
+      const overlay = document.getElementById('popupOverlay');
+      popup.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    // Save the settings (name and profile picture) to localStorage
+    function saveSettings() {
+      const name = document.getElementById('newName').value;
+      const pfpInput = document.getElementById('newProfilePicture');
+      const pfpFile = pfpInput.files[0];
+
+      // Save name
+      localStorage.setItem('user-name', name);
+
+      // Save profile picture (if one was uploaded)
+      if (pfpFile) {
+        const reader = new FileReader();
+        reader.onloadend = function () {
+          const pfpUrl = reader.result;
+          localStorage.setItem('user-pfp', pfpUrl);
+          document.getElementById('displayPfp').src = pfpUrl; // Update the displayed profile picture
+          document.getElementById('newProfileImagePreview').src = pfpUrl; // Update the preview in the popup
+        };
+        reader.readAsDataURL(pfpFile);
+      } else {
+        // If no file is selected, update the name and close the popup
+        document.getElementById('displayName').textContent = name;
+      }
+
+      // Close the popup after saving settings
+      closePopup();
+
+      alert('Settings saved!');
+    }
+
+    // Function to display greeting based on the time of day
+    function setGreeting() {
+      const hours = new Date().getHours();
+      let greeting;
+
+      if (hours < 12) {
+        greeting = "Good Morning";
+      } else if (hours < 18) {
+        greeting = "Good Afternoon";
+      } else {
+        greeting = "Good Evening";
+      }
+
+      document.getElementById('greetingLabel').textContent = greeting + ",";
+    }
+
+    // Load settings on page load
+    loadSettings();
+
+    // Set greeting on page load
+    setGreeting();
+  </script>
+
+</body>
+</html>
